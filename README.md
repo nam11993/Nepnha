@@ -11,7 +11,7 @@
 - Thêm và đổi tên danh mục thu / chi ở Cài đặt hoặc màn hình nhập giao dịch. Đổi tên cập nhật giao dịch và ngân sách, giữ nguyên số tiền. Danh mục đồng bộ cùng sổ chung và nằm trong bản sao lưu.
 - Chạm tiêu đề tháng để chọn tháng / năm bằng lịch; chọn ngày giao dịch bằng lịch ngày. Biểu đồ năm tự cuộn tới tháng có dữ liệu, ưu tiên tháng hiện tại.
 - Xuất/khôi phục JSON; xác nhận trước khi thay thế dữ liệu. Giao dịch mới chỉ được hiển thị là đã lưu sau khi ghi bộ nhớ thành công.
-- Đăng nhập bằng liên kết email, tạo sổ chung, tham gia bằng mã mời, đổi mã mời và xóa tài khoản. Thành viên có toàn quyền sửa sổ chung. Mỗi tài khoản tham gia một nhóm.
+- Đăng nhập Google và đặt tên hiển thị; mỗi tài khoản có sổ cá nhân đồng bộ. Tạo hoặc tham gia gia đình bằng mã mời; chủ nhà quản lý thành viên, đổi mã mời và quản lý toàn bộ sổ. Thành viên chỉ sửa/xóa giao dịch mình tạo; có lịch sử chỉnh sửa.
 - Làm mới dữ liệu chung mỗi 15 giây khi app đang mở và khi quay lại app. Lưu cần Internet; chưa hỗ trợ hàng đợi sửa offline. Khi có cập nhật đồng thời, yêu cầu tải lại thay vì âm thầm ghi đè.
 - Ghi thu chi bằng giọng nói và AI OpenAI: tách tối đa 8 giao dịch trong một câu, đối chiếu số tiền với lời nói, chỉnh sửa / bỏ từng khoản rồi lưu cả danh sách một lần. Người dùng chỉ cần đăng nhập Nếp Nhà. Hạn mức mặc định 20 lượt/ngày/tài khoản, cấu hình riêng được lưu ở máy chủ.
 - Trợ lý hỏi đáp thu chi: AI hiểu câu hỏi, máy chủ tính tiền từ sổ của người gọi. Có chế độ Cơ bản không gọi API. Xem [AI.md](AI.md) và [VOICE.md](VOICE.md).
@@ -30,27 +30,18 @@ Khóa publishable Supabase trong mã là khóa công khai của ứng dụng, kh
 
 Đây là bản mã nguồn tương ứng website đã triển khai, gồm React Native / Expo, backend Supabase, tài liệu và kiểm thử. Dữ liệu thu chi, tài khoản đăng nhập và secrets trên Supabase không được xuất vào GitHub.
 
-## Dùng tài khoản chung trên web
+## Tài khoản và gia đình
 
-1. Mở Cài đặt, nhập cùng email chủ dự án Supabase trên mỗi thiết bị và chọn Gửi liên kết đăng nhập.
-2. Mở liên kết email trong trình duyệt muốn dùng. Dịch vụ email mặc định chỉ gửi tới email thành viên tổ chức Supabase và có giới hạn tần suất. Muốn dùng email bên ngoài tổ chức cần SMTP riêng.
-3. Chọn Tạo sổ dùng chung một lần. Những thiết bị đăng nhập cùng email tự mở cùng sổ; làm mới mỗi 15 giây khi đang mở web.
-4. Sổ riêng trên mỗi thiết bị vẫn được giữ. Xuất sổ riêng trước khi đăng nhập, rồi khôi phục vào sổ chung nếu muốn chuyển dữ liệu.
+1. Đăng nhập Google trong Cài đặt và đặt tên hiển thị. Tên được điền mặc định khi ghi thu chi; có thể sửa tên trong Tài khoản bằng nút Sửa rồi Lưu thay đổi.
+2. Tài khoản mới dùng sổ cá nhân đồng bộ. Tạo gia đình để chia sẻ sổ hiện tại, hoặc nhập mã mời để tham gia sổ của chủ nhà; sổ cá nhân cũ được giữ riêng.
+3. Thành viên chỉ sửa/xóa giao dịch mình tạo; chủ nhà quản lý toàn bộ. Tên người thu/chi có thể sửa khi ghi hộ, nhưng tài khoản thực hiện được ghi riêng trên máy chủ.
+4. Chủ nhà có thể xóa thành viên kèm đổi mã mời. Thành viên có thể rời nhóm; chủ nhà có thể giải tán gia đình và giữ sổ dưới dạng cá nhân.
+5. Mọi tài khoản đăng nhập dùng chung dịch vụ AI của ứng dụng. Lần đầu gửi yêu cầu sẽ hỏi đồng ý xử lý dữ liệu với OpenAI; có thể thu hồi tại Cài đặt → Quyền riêng tư AI.
+6. Chưa đăng nhập vẫn ghi thu chi trên thiết bị; không dùng AI, không tham gia gia đình và không đồng bộ dữ liệu.
 
-URL quay về sau đăng nhập: `https://nep-nha-thu-chi.lunargem512.chatgpt.site/settings`. Khóa trong `src/cloud-config.ts` là publishable key công khai, không phải khóa quản trị.
+Xem [ACCOUNTS.md](ACCOUNTS.md) để thiết lập Google OAuth, liên kết tài khoản hiện có và nâng cấp cơ sở dữ liệu. **Không chạy lại `supabase/accounts-and-families.sql` trên dự án đã nâng cấp**: script này có bước xóa giao dịch cũ đã được phê duyệt cho lần chuyển đổi ban đầu.
 
-## Thiết lập một dự án khác
-
-1. Tạo dự án Supabase riêng và chạy lần lượt `supabase/schema.sql`, `supabase/custom-categories.sql` trong SQL Editor. Các tệp tạo bảng, bật RLS, chặn truy cập bảng trực tiếp và cấp quyền cho RPC đã xác thực. Danh mục cũ được nhận tự động khi đọc; chưa thay đổi dữ liệu sổ đã lưu.
-2. Bật đăng nhập Email, cấu hình Site URL và Redirect URL về trang `/settings` của website. Dùng liên kết email mặc định; cấu hình SMTP riêng nếu cần gửi cho email ngoài tổ chức.
-3. Sao chép `.env.example` thành `.env`, điền URL và publishable key của dự án. Không dùng service_role/secret key trong app.
-4. Đặt hai biến tương tự trong môi trường EAS trước khi build; các biến EXPO_PUBLIC là công khai trong app. Phân quyền máy chủ phải giữ nguyên.
-5. Chạy lại app. Vào Cài đặt, đăng nhập, tạo gia đình. Người thứ hai đăng nhập bằng email riêng và nhập mã mời.
-6. Nhóm bắt đầu với sổ chung rỗng; sổ riêng được giữ riêng tại thiết bị. Có thể xuất sổ riêng rồi khôi phục vào sổ chung sau khi xác nhận thay thế.
-
-Schema đã được triển khai. Kiểm thử trực tiếp trên máy chủ xác nhận lưu và đọc lại, cách ly tài khoản, từ chối ghi đè phiên bản cũ và chặn truy cập chưa đăng nhập; dữ liệu kiểm thử được rollback. Cần kiểm thử liên kết đăng nhập thật và đồng bộ trên hai iPhone trước phát hành App Store. Xóa tài khoản chủ nhóm sẽ xóa cả sổ gia đình; giao diện yêu cầu xác nhận. Hệ thống hiện chưa có phân quyền chỉ xem hoặc chức năng loại thành viên khỏi nhóm.
-
-Advisors báo các RPC SECURITY DEFINER cho authenticated và RLS không có policy: đây là mô hình chủ đích. Truy cập bảng trực tiếp bị thu hồi; chỉ RPC có kiểm tra auth.uid và tư cách thành viên được phép truy cập sổ. Không cấp EXECUTE cho anon/PUBLIC.
+URL quay về sau đăng nhập: `https://nep-nha-thu-chi.lunargem512.chatgpt.site/settings`. Khóa publishable trong `src/cloud-config.ts` là khóa công khai, không phải khóa quản trị. API key OpenAI chỉ lưu trong Supabase Edge Function Secrets.
 
 ## Chạy thử
 

@@ -1,3 +1,5 @@
+import { AIConsent } from "../ai-consent";
+import { Dialog } from "../dialog";
 import React, { useEffect, useRef, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { router } from "expo-router";
@@ -8,7 +10,7 @@ import { ReadAloud, SpeechInput } from "../speech";
 import { requestAI, useAIStatus, type AIResult } from "../ai-client";
 import { AIConnection } from "../ai-connection";
 export default function Assistant() {
-  const { data, month, household, session } = useLedger(),
+  const { data, month, household, session, profile } = useLedger(),
     { status, refresh } = useAIStatus();
   const scroll = useRef<ScrollView>(null),
     pendingScroll = useRef(false);
@@ -24,8 +26,19 @@ export default function Assistant() {
     ),
     [answeredEngine, setAnsweredEngine] = useState("Cơ bản");
   const engine = preference ?? (status.configured ? "AI OpenAI" : "Cơ bản");
-  async function ask(text: string) {
+  const [consentQuestion, setConsentQuestion] = useState<string | null>(null);
+  const [consentBusy, setConsentBusy] = useState(false);
+  async function ask(text: string, consented = false) {
     if (working || !text.trim()) return;
+    if (
+      engine === "AI OpenAI" &&
+      session &&
+      !profile?.ai_consent &&
+      !consented
+    ) {
+      setConsentQuestion(text);
+      return;
+    }
     setError("");
     setRemote(null);
     setAsked(text);
@@ -36,7 +49,7 @@ export default function Assistant() {
       return;
     }
     if (!household || !session) {
-      setError("Đăng nhập và mở sổ gia đình để dùng AI.");
+      setError("Đăng nhập để dùng AI với sổ cá nhân hoặc gia đình.");
       return;
     }
     setWorking(true);
@@ -123,13 +136,34 @@ export default function Assistant() {
             : "Chế độ cơ bản tổng hợp trên thiết bị theo câu mẫu, không gọi OpenAI."}
         </Text>
         <Text style={st.tiny}>
-          {household
+          {household?.is_family
             ? `Sổ gia đình: ${household.name}`
-            : "Sổ riêng trên thiết bị"}
+            : session
+              ? "Sổ cá nhân · Đã đồng bộ"
+              : "Sổ trên thiết bị"}
           . Không nêu tháng dùng tháng đang chọn. “Tháng này” theo lịch hiện
           tại. So sánh mặc định với tháng liền trước của tháng đang chọn.
         </Text>
       </Card>
+      {consentQuestion !== null && (
+        <Dialog
+          visible
+          title="Quyền riêng tư AI"
+          onClose={() => {
+            if (!consentBusy) setConsentQuestion(null);
+          }}
+        >
+          <AIConsent
+            onBusyChange={setConsentBusy}
+            onCancel={() => setConsentQuestion(null)}
+            onContinue={() => {
+              const text = consentQuestion;
+              setConsentQuestion(null);
+              void ask(text, true);
+            }}
+          />
+        </Dialog>
+      )}
       <MonthPicker />
       <Card>
         <SpeechInput

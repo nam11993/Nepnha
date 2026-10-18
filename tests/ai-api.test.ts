@@ -43,6 +43,7 @@ function setup(
     output?: unknown;
     completed?: boolean;
     noFamily?: boolean;
+    consent?: boolean;
   } = {},
 ) {
   const calls: { url: string; init?: RequestInit }[] = [];
@@ -57,6 +58,11 @@ function setup(
         enabled: options.allowed !== false,
         used: 0,
         limit: 20,
+      });
+    if (String(url).endsWith("/get_my_account"))
+      return Response.json({
+        profile: { display_name: "Nam", ai_consent: options.consent !== false },
+        book: options.noFamily ? null : { id: "family", revision: 4, ledger },
       });
     if (String(url).endsWith("/get_my_household"))
       return Response.json(
@@ -533,4 +539,19 @@ test("spoken slang examples recover money independently of model number fields",
     assert.equal(result.drafts[0].amount, amount);
     assert.equal(result.drafts[0].source, text);
   }
+});
+
+test("AI requires explicit consent before any paid request or transmission to OpenAI", async () => {
+  const { handler, calls } = setup({ consent: false });
+  const response = await handler(req());
+  assert.equal(response.status, 403);
+  assert.equal((await response.json()).code, "ai_consent_required");
+  assert.equal(
+    calls.some((call) => call.url.includes("api.openai.com")),
+    false,
+  );
+  assert.equal(
+    calls.some((call) => call.url.includes("consume_my_ai_request")),
+    false,
+  );
 });

@@ -160,7 +160,14 @@ export function createAIHandler(
           "ai_not_configured",
           "Chưa lưu OPENAI_API_KEY trên máy chủ. Dùng trợ lý cơ bản trong lúc chờ kết nối.",
         );
-      const family = await call("/rest/v1/rpc/get_my_household", {});
+      const account = await call("/rest/v1/rpc/get_my_account", {});
+      if (!account?.profile?.display_name || !account.profile.ai_consent)
+        throw new APIError(
+          403,
+          "ai_consent_required",
+          "Hãy đặt tên và đồng ý xử lý với AI trong Nếp Nhà trước khi dùng.",
+        );
+      const family = account.book;
       if (!family?.ledger && input.mode === "ask")
         throw new APIError(
           403,

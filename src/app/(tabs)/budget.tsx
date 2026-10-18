@@ -5,7 +5,7 @@ import { CategoryIcon } from "../../category-visuals";
 import { useLedger } from "../../store";
 import { Button, Card, colors, MonthPicker, Page, st } from "../../ui";
 function BudgetForm() {
-  const { data, month, busy, save, household } = useLedger(),
+  const { data, month, busy, save, household, isOwner } = useLedger(),
     [expected, setExpected] = useState(household?.revision),
     [draft, setDraft] = useState<Record<string, string>>(() =>
       Object.fromEntries(
@@ -119,9 +119,14 @@ function BudgetForm() {
       {!!message && <Text style={{ color: colors.green }}>{message}</Text>}
       <Button
         title={busy ? "Đang lưu…" : "Lưu ngân sách tháng này"}
-        disabled={busy}
+        disabled={busy || !isOwner}
         onPress={() => void submit()}
       />
+      {!isOwner && (
+        <Text style={st.tiny}>
+          Chủ nhà quản lý ngân sách chung. Bạn vẫn xem được tình hình chi tiêu.
+        </Text>
+      )}
     </Page>
   );
 }

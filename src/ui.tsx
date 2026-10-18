@@ -100,7 +100,7 @@ export function Page({
   children: React.ReactNode;
   headerAction?: React.ReactNode;
 }) {
-  const { household, error, reload } = useLedger();
+  const { household, error, reload, session } = useLedger();
   return (
     <SafeAreaView edges={["top", "left", "right"]} style={st.page}>
       <ScrollView
@@ -112,9 +112,11 @@ export function Page({
         <View style={[st.row, { paddingVertical: 8 }]}>
           <View style={{ flex: 1, gap: 5 }}>
             <Text style={st.tiny}>
-              {household
+              {household?.is_family
                 ? `Sổ gia đình: ${household.name}`
-                : "Sổ riêng trên thiết bị"}
+                : session
+                  ? "Sổ cá nhân · Đã đồng bộ"
+                  : "Sổ trên thiết bị · Chưa đăng nhập"}
             </Text>
             <Text style={st.title}>{title}</Text>
             {subtitle && <Text style={st.tiny}>{subtitle}</Text>}

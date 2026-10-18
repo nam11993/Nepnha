@@ -1,12 +1,13 @@
 import React from "react";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { ActivityIndicator, Text, View } from "react-native";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { ActivityIndicator, Text, View, ScrollView } from "react-native";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { LedgerProvider, useLedger } from "../store";
+import { Family } from "../family";
 import { Button, colors, st } from "../ui";
 function Routes() {
-  const { ready, error, reload } = useLedger();
+  const { ready, error, reload, session, profile, household } = useLedger();
   if (!ready)
     return (
       <View
@@ -22,8 +23,22 @@ function Routes() {
         )}
       </View>
     );
+  if (session && !profile?.display_name)
+    return (
+      <SafeAreaView style={st.page}>
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={[st.content, { paddingTop: 36 }]}
+        >
+          <Family />
+        </ScrollView>
+      </SafeAreaView>
+    );
   return (
-    <Stack screenOptions={{ headerShown: false }}>
+    <Stack
+      key={(session?.user.id ?? "guest") + ":" + (household?.id ?? "local")}
+      screenOptions={{ headerShown: false }}
+    >
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="entry" options={{ presentation: "modal" }} />
       <Stack.Screen name="assistant" />

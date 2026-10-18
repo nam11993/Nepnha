@@ -10,13 +10,15 @@ export function CategoryManager({
   expectedRevision,
   onSaved,
   label = "Quản lý danh mục",
+  renderTrigger,
 }: {
   initialKind?: Kind;
   expectedRevision?: number;
   onSaved?: (kind: Kind, previous: string | null, name: string) => void;
   label?: string;
+  renderTrigger?: (open: () => void) => React.ReactNode;
 }) {
-  const { data, save, busy } = useLedger();
+  const { data, save, busy, isOwner } = useLedger();
   const scroll = useRef<ScrollView>(null);
   const [visible, setVisible] = useState(false);
   const [kind, setKind] = useState<Kind>(initialKind);
@@ -43,20 +45,33 @@ export function CategoryManager({
       setError((e as Error).message);
     }
   }
+  if (!isOwner)
+    return <Text style={st.tiny}>Chủ nhà quản lý danh mục chung.</Text>;
+  const openManager = () => {
+    reset();
+    setKind(initialKind);
+    setVisible(true);
+  };
   return (
     <>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={label}
-        onPress={() => {
-          reset();
-          setKind(initialKind);
-          setVisible(true);
-        }}
-        style={{ paddingVertical: 10, alignSelf: "flex-start" }}
-      >
-        <Text style={{ color: colors.green, fontWeight: "600" }}>{label}</Text>
-      </Pressable>
+      {renderTrigger ? (
+        renderTrigger(openManager)
+      ) : (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={label}
+          onPress={() => {
+            reset();
+            setKind(initialKind);
+            setVisible(true);
+          }}
+          style={{ paddingVertical: 10, alignSelf: "flex-start" }}
+        >
+          <Text style={{ color: colors.green, fontWeight: "600" }}>
+            {label}
+          </Text>
+        </Pressable>
+      )}
       <Dialog
         scrollRef={scroll}
         visible={visible}

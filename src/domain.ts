@@ -23,6 +23,7 @@ export const categories = {
 };
 export const payments = ["Tiền mặt", "Chuyển khoản", "Thẻ", "Ví điện tử"];
 export type Entry = {
+  created_by?: string | null;
   id: string;
   kind: Kind;
   amount: number;

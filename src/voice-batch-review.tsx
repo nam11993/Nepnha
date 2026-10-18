@@ -22,13 +22,18 @@ export function VoiceBatchReview({
   onSaved: () => void;
   onBack: () => void;
 }) {
-  const { data, save, busy, session, household } = useLedger();
+  const { data, save, busy, session, household, profile } = useLedger();
   const [origin] = useState(() => ({
     userId: session?.user.id,
     id: household?.id,
     revision: household?.revision,
   }));
-  const [rows, setRows] = useState(() => reviewRows(drafts));
+  const [rows, setRows] = useState(() =>
+    reviewRows(drafts).map((row) => ({
+      ...row,
+      member: row.member || profile?.display_name || "",
+    })),
+  );
   const [editing, setEditing] = useState<string | null>(null),
     [calendar, setCalendar] = useState<string | null>(null),
     [error, setError] = useState("");

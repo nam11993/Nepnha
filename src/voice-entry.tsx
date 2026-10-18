@@ -1,3 +1,4 @@
+import { AIConsent } from "./ai-consent";
 import React, { useEffect, useRef, useState } from "react";
 import { Keyboard, Pressable, ScrollView, Text, View } from "react-native";
 import { router } from "expo-router";
@@ -21,7 +22,9 @@ export function VoiceEntry({
   allowMultiple?: boolean;
   onBatchSaved?: () => void;
 }) {
-  const { month, household, session, busy } = useLedger();
+  const { month, household, session, profile, busy } = useLedger();
+  const [consentPending, setConsentPending] = useState(false);
+  const [consentBusy, setConsentBusy] = useState(false);
   const { status, refresh } = useAIStatus();
   const [working, setWorking] = useState(false),
     [error, setError] = useState("");
@@ -34,7 +37,8 @@ export function VoiceEntry({
   const running = useRef<AbortController | null>(null);
   useEffect(() => () => running.current?.abort(), []);
   function close() {
-    if (busy) return;
+    if (busy || consentBusy) return;
+    setConsentPending(false);
     running.current?.abort();
     running.current = null;
     setWorking(false);
@@ -47,11 +51,16 @@ export function VoiceEntry({
     drafts: BatchVoiceDraft[];
     clarification: string;
   } | null>(null);
-  async function extract() {
+  async function extract(consented = false) {
     if (working) return;
     setError("");
     if (!session) {
       setError("Đăng nhập Nếp Nhà để dùng AI.");
+      return;
+    }
+    if (!profile?.ai_consent && !consented) {
+      Keyboard.dismiss();
+      setConsentPending(true);
       return;
     }
     setWorking(true);
@@ -130,10 +139,25 @@ export function VoiceEntry({
         <Dialog
           scrollRef={scroll}
           visible
-          title={batch ? "Kiểm tra các khoản" : "Nói để ghi thu chi"}
+          title={
+            consentPending
+              ? "Quyền riêng tư AI"
+              : batch
+                ? "Kiểm tra các khoản"
+                : "Nói để ghi thu chi"
+          }
           onClose={close}
         >
-          {batch ? (
+          {consentPending ? (
+            <AIConsent
+              onBusyChange={setConsentBusy}
+              onCancel={() => setConsentPending(false)}
+              onContinue={() => {
+                setConsentPending(false);
+                void extract(true);
+              }}
+            />
+          ) : batch ? (
             <VoiceBatchReview
               drafts={batch.drafts}
               clarification={batch.clarification}

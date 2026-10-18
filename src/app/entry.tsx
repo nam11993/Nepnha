@@ -31,7 +31,7 @@ export default function Editor() {
     else router.replace("/transactions");
   }
   const { id, voice } = useLocalSearchParams<{ id?: string; voice?: string }>(),
-    { data, save, busy, month, household } = useLedger(),
+    { data, save, busy, month, household, profile, canEdit } = useLedger(),
     existing = data.entries.find((e) => e.id === id);
   const [expected, setExpected] = useState(household?.revision);
   const [kind, setKind] = useState<Kind>(existing?.kind ?? "expense"),
@@ -46,7 +46,9 @@ export default function Editor() {
       existing?.category ?? data.categories.expense[0],
     ),
     [note, setNote] = useState(existing?.note ?? ""),
-    [member, setMember] = useState(existing?.member ?? ""),
+    [member, setMember] = useState(
+      existing?.member ?? profile?.display_name ?? "",
+    ),
     [payment, setPayment] = useState(existing?.payment ?? payments[0]),
     [amountFocused, setAmountFocused] = useState(false),
     [calendar, setCalendar] = useState(false),
@@ -56,6 +58,8 @@ export default function Editor() {
   async function submit() {
     try {
       setError("");
+      if (existing && !canEdit(existing))
+        throw Error("Bạn chỉ được sửa giao dịch mình tạo.");
       const entry: Entry = {
         id: existing?.id ?? Crypto.randomUUID(),
         kind,
@@ -82,6 +86,8 @@ export default function Editor() {
   }
   async function remove() {
     try {
+      if (existing && !canEdit(existing))
+        throw Error("Bạn không có quyền xóa giao dịch này.");
       await save(
         { ...data, entries: data.entries.filter((e) => e.id !== existing?.id) },
         expected,
@@ -286,7 +292,13 @@ export default function Editor() {
           placeholderTextColor={colors.muted}
           maxLength={300}
         />
-        <Text style={st.label}>Thành viên (không bắt buộc)</Text>
+        {!!existing && !canEdit(existing) && (
+          <Text style={st.subtitle}>
+            Bạn đang xem giao dịch của thành viên khác. Chỉ người tạo và chủ nhà
+            được sửa/xóa.
+          </Text>
+        )}
+        <Text style={st.label}>Người thu / chi (có thể ghi hộ)</Text>
         <TextInput
           accessibilityLabel="Thành viên"
           style={st.input}
@@ -305,10 +317,11 @@ export default function Editor() {
         )}
         <Button
           title={busy ? "Đang lưu…" : "Lưu giao dịch"}
-          disabled={busy}
+          disabled={busy || (!!existing && !canEdit(existing))}
           onPress={() => void submit()}
         />
         {existing &&
+          canEdit(existing) &&
           (deleting ? (
             <View style={{ gap: 12 }}>
               <Text style={st.error}>
