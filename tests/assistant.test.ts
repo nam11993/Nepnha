@@ -4,6 +4,7 @@ import {
   answerLedger,
   parseVoiceDraft,
   spokenAmount,
+  spacedMoneySuggestion,
 } from "../src/assistant-domain.ts";
 import { emptyLedger } from "../src/domain.ts";
 const today = "2026-10-17";
@@ -62,6 +63,13 @@ test("Vietnamese voice amounts, decimal units, explicit integers and ambiguity",
     ["chi 250000 tiền ăn", 250000],
     ["35k", 35000],
     ["250.000 đồng", 250000],
+    ["Mua máy sấy 14 củ", 14000000],
+    ["14 củ rưỡi", 14500000],
+    ["14 củ 500 nghìn", 14500000],
+    ["Mua nước 156 ca", 156000],
+    ["Mua máy hút bụi sáu củ", 6000000],
+    ["Mua nhà hai tỏi", 2000000000],
+    ["mười bốn củ", 14000000],
   ] as const)
     assert.equal(spokenAmount(text), amount, text);
   for (const text of [
@@ -75,8 +83,45 @@ test("Vietnamese voice amounts, decimal units, explicit integers and ambiguity",
     "hai ba nghìn",
     "1 triệu 5",
     "chi 1 triệu và 200",
+    "Mua máy sấy 14 cũ",
+    "mua 2 củ khoai",
+    "mua hai củ khoai",
+    "hai củ tỏi",
+    "làm 3 ca",
   ])
     assert.equal(spokenAmount(text), undefined, text);
+});
+test("dictated digits keep their full amount and ambiguous groupings stay review suggestions", () => {
+  for (const text of [
+    "1 5 6k",
+    "1 5 6 K",
+    "1 5 6 nghìn",
+    "chi 1 5 6 nghìn",
+    "1\u00a05\u00a06k",
+  ])
+    assert.equal(spokenAmount(text), 156000, text);
+  assert.equal(spokenAmount("2 5k"), 25000);
+  assert.equal(spokenAmount("1 5 6k và 25k"), undefined);
+  assert.equal(spokenAmount("ngày 1 5 6"), undefined);
+  assert.equal(
+    spacedMoneySuggestion("Mua đồ gia dụng 15 6000")?.amount,
+    156000,
+  );
+  assert.equal(spacedMoneySuggestion("Ăn trưa 166 2000")?.amount, 1662000);
+  assert.equal(spacedMoneySuggestion("Ăn trưa 166\u00a02000")?.amount, 1662000);
+  for (const text of [
+    "15 cái giá 6000",
+    "15 6000 và 25000",
+    "ngày 18 mua 15 6000",
+    "15 6500",
+    "1 5 6",
+    "15, 6000",
+    "166 cái 2000",
+    "166, 2000",
+    "166 2000 và 25k",
+    "100000000 2000",
+  ])
+    assert.equal(spacedMoneySuggestion(text), undefined, text);
 });
 test("Voice draft stays read-only and handles income, yesterday and exact custom categories", () => {
   const before = JSON.stringify(data);

@@ -274,6 +274,83 @@ const batchOutput = {
   clarification: "",
 };
 
+test("batch API recovers spaced dictation amounts without merging the next transaction", async () => {
+  for (const moneyText of ["1 5 6k", "1 5 6 nghìn", "15 6000"]) {
+    const firstSource = "Mua đồ gia dụng " + moneyText;
+    const secondSource = "mua mũ bảo hiểm 25.000";
+    const text = firstSource + ", " + secondSource;
+    const output = structuredClone(batchOutput);
+    Object.assign(output.transactions[0], {
+      source: firstSource,
+      amountText: moneyText,
+      amount: null,
+      category: "Mua sắm",
+    });
+    Object.assign(output.transactions[1], {
+      source: secondSource,
+      amountText: "25.000",
+      amount: 25000,
+      category: "Mua sắm",
+    });
+    const { handler } = setup({ output });
+    const response = await handler(
+      req({ mode: "extract_batch", text, month: "2026-10" }),
+    );
+    assert.equal(response.status, 200);
+    const result = await response.json();
+    assert.deepEqual(
+      result.drafts.map((d: BatchVoiceDraft) => d.amount),
+      [156000, 25000],
+    );
+    assert.ok(result.drafts[0].warnings.some((w: string) => /ghép/i.test(w)));
+    output.transactions[0].amount = 999000;
+    assert.equal(
+      validateAIBatch(output, ledger, text).drafts[0].amount,
+      156000,
+    );
+  }
+});
+
+test("reported dryer slang and three-digit dictation grouping remain two reviewed transactions", async () => {
+  const output = structuredClone(batchOutput);
+  Object.assign(output.transactions[0], {
+    source: "Mua máy sấy 14 củ",
+    amountText: "14 củ",
+    amount: 14000000,
+    category: "Mua sắm",
+  });
+  Object.assign(output.transactions[1], {
+    source: "Ăn trưa 166 2000",
+    amountText: null,
+    amount: null,
+    category: "Ăn uống",
+  });
+  const text = "Mua máy sấy 14 củ, Ăn trưa 166 2000";
+  for (const missingModelAmount of [false, true]) {
+    if (missingModelAmount)
+      Object.assign(output.transactions[0], { amount: null, amountText: null });
+    const { handler, calls } = setup({ output });
+    const response = await handler(
+      req({ mode: "extract_batch", text, month: "2026-10" }),
+    );
+    assert.equal(response.status, 200);
+    const { drafts } = await response.json();
+    assert.deepEqual(
+      drafts.map((d: BatchVoiceDraft) => [d.amount, d.category]),
+      [
+        [14000000, "Mua sắm"],
+        [1662000, "Ăn uống"],
+      ],
+    );
+    assert.ok(drafts[0].warnings.some((w: string) => w.includes("quy đổi")));
+    assert.ok(drafts[1].warnings.some((w: string) => w.includes("166 2000")));
+    assert.equal(
+      calls.some((c) => c.url.includes("save_my_ledger")),
+      false,
+    );
+  }
+});
+
 test("batch API returns separate amounts/categories, one quota use and never saves automatically", async () => {
   const { handler, calls } = setup({ output: batchOutput });
   const response = await handler(
@@ -427,4 +504,33 @@ test("mixed income/expense, shared metadata and compound units remain distinct",
       .drafts[1].amount,
     undefined,
   );
+});
+
+test("spoken slang examples recover money independently of model number fields", async () => {
+  for (const [text, amount, category] of [
+    ["Mua nước 156 ca", 156000, "Ăn uống"],
+    ["Mua máy hút bụi sáu củ", 6000000, "Mua sắm"],
+    ["Mua nhà hai tỏi", 2000000000, "Nhà ở"],
+  ] as const) {
+    const output = {
+      transactions: [
+        {
+          ...batchOutput.transactions[0],
+          source: text,
+          amountText: null,
+          amount: null,
+          category,
+        },
+      ],
+      clarification: "",
+    };
+    const { handler } = setup({ output });
+    const response = await handler(
+      req({ mode: "extract_batch", text, month: "2026-10" }),
+    );
+    assert.equal(response.status, 200);
+    const result = await response.json();
+    assert.equal(result.drafts[0].amount, amount);
+    assert.equal(result.drafts[0].source, text);
+  }
 });

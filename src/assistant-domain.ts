@@ -67,8 +67,45 @@ function underThousand(text: string): number | undefined {
 }
 const wordNumber =
   "(?:khong|mot|hai|ba|bon|tu|nam|lam|sau|bay|tam|chin|tram|muoi|linh|le)";
+function normalizeCurrencySlang(input: string): string {
+  // Preserve accents and require an amount boundary: "cũ" and "củ khoai"
+  // must not become money units. Support both written and numeric numbers.
+  return input
+    .normalize("NFC")
+    .replace(
+      /(\d+(?:[.,]\d+)*|[\p{L}]+)\s*(củ|tỏi|ca)(?=\s*(?:$|[,.!?;]|rưỡi\b|\d+\s*(?:nghìn|ngàn|k\b)))/giu,
+      (
+        match,
+        number: string,
+        unit: string,
+        offset: number,
+        original: string,
+      ) => {
+        if (underThousand(fold(number)) === undefined) return match;
+        if (
+          unit.toLowerCase() === "ca" &&
+          /\b(?:lam|truc|tang|chia)\s*$/.test(fold(original.slice(0, offset)))
+        )
+          return match;
+        const replacement = { củ: "triệu", tỏi: "tỷ", ca: "nghìn" }[
+          unit.toLowerCase()
+        ];
+        return number + " " + replacement;
+      },
+    );
+}
+export function slangMoneyAmount(input: string): number | undefined {
+  if (normalizeCurrencySlang(input) !== input.normalize("NFC"))
+    return spokenAmount(input);
+}
 export function spokenAmount(input: string): number | undefined {
-  const text = fold(input)
+  const text = fold(normalizeCurrencySlang(input))
+    // Dictation may separate digits: "1 5 6k". Only join single digits
+    // immediately followed by a money unit; never join dates or separate clauses.
+    .replace(
+      /\b\d(?:\s+\d){1,5}\s*(?=k\b|nghin\b|ngan\b|trieu\b|ty\b|dong\b|vnd\b|₫)/g,
+      (digits) => digits.replace(/\s+/g, ""),
+    )
     .replace(/₫/g, " dong ")
     .replace(/(\d)\s*k\b/g, "$1 nghin")
     .replace(/\b\d{1,2}[/-]\d{1,2}(?:[/-]\d{2,4})?\b/g, " ")
@@ -114,6 +151,22 @@ export function spokenAmount(input: string): number | undefined {
   return Math.abs(rounded - total) < 0.001 && rounded > 0 && rounded <= 1e12
     ? rounded
     : undefined;
+}
+// An unusual dictation grouping is a suggestion for the review screen,
+// not a change to ordinary amount parsing ("15 6000" could mean 15 items).
+export function spacedMoneySuggestion(
+  input: string,
+): { amount: number; warning: string } | undefined {
+  const text = fold(input).trim();
+  const match =
+    /\b([1-9]\d{0,7})\s+([1-9]000)(?:\s*(?:dong|vnd|₫))?[.!?]?$/u.exec(text);
+  if (!match || /\d/.test(text.slice(0, match.index))) return;
+  const amount = Number(match[1] + match[2]);
+  if (!Number.isSafeInteger(amount) || amount > 1e12) return;
+  return {
+    amount,
+    warning: `Lời nói tách số “${match[1]} ${match[2]}”: tạm ghép thành ${money(amount)}. Hãy xác nhận số tiền trước khi lưu.`,
+  };
 }
 const aliases: [string, string[]][] = [
   [

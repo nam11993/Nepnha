@@ -8,7 +8,13 @@ import {
   breakdown,
   validateLedger,
 } from "./domain.ts";
-import { fold, spokenAmount, type VoiceDraft } from "./assistant-domain.ts";
+import {
+  fold,
+  spokenAmount,
+  spacedMoneySuggestion,
+  slangMoneyAmount,
+  type VoiceDraft,
+} from "./assistant-domain.ts";
 export const AI_MODEL = "gpt-6-luna";
 const nullableText = { type: ["string", "null"] };
 export const draftSchema = {
@@ -77,13 +83,38 @@ export function validateAIBatch(
     // Every item must refer to a distinct, ordered clause actually spoken by the user.
     if (!source || at < 0) throw Error("invalid_ai_source");
     cursor = at + normalize(source).length;
-    const draft = validateAIDraft(d, ledger);
     const amountText =
       typeof d.amountText === "string" ? d.amountText.trim() : "";
+    const suggestion = spacedMoneySuggestion(source);
+    const spacedDigits =
+      /\b\d(?:\s+\d){1,5}\s*(?:k|nghìn|ngàn|triệu|tỷ|đồng|vnd|₫)\b/i.test(
+        source,
+      );
+    const spacedAmount = spacedDigits ? spokenAmount(source) : undefined;
+    const slangAmount = slangMoneyAmount(source);
     const grounded =
-      amountText && normalize(source).includes(normalize(amountText))
+      suggestion?.amount ??
+      spacedAmount ??
+      slangAmount ??
+      (amountText && normalize(source).includes(normalize(amountText))
         ? spokenAmount(amountText)
-        : undefined;
+        : undefined);
+    // The bounded spacing parser supplies the suggestion independently of the model.
+    // The original source and an explicit warning remain visible before saving.
+    const recovered = suggestion?.amount ?? spacedAmount ?? slangAmount;
+    const draft = validateAIDraft(
+      recovered === undefined ? d : { ...d, amount: recovered },
+      ledger,
+    );
+    if (suggestion) draft.warnings.push(suggestion.warning);
+    else if (slangAmount !== undefined)
+      draft.warnings.push(
+        `Đã quy đổi đơn vị tiền trong lời nói thành ${money(slangAmount)}. Hãy kiểm tra trước khi lưu.`,
+      );
+    else if (spacedAmount !== undefined)
+      draft.warnings.push(
+        `Đã ghép các chữ số bị tách thành ${money(spacedAmount)}. Hãy kiểm tra trước khi lưu.`,
+      );
     if (
       draft.amount !== undefined &&
       (grounded === undefined || grounded !== draft.amount)

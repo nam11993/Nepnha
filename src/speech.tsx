@@ -17,23 +17,8 @@ import {
 import { colors, st } from "./ui";
 import { Icon } from "./icon";
 import { useFocusEffect } from "expo-router";
-type RecognitionResult = {
-  isFinal: boolean;
-  0: { transcript: string };
-  length: number;
-};
-type Recognition = {
-  lang: string;
-  continuous: boolean;
-  interimResults: boolean;
-  maxAlternatives: number;
-  onresult: ((event: { results: ArrayLike<RecognitionResult> }) => void) | null;
-  onerror: ((event: { error: string }) => void) | null;
-  onend: (() => void) | null;
-  start: () => void;
-  stop: () => void;
-  abort: () => void;
-};
+import { createSpeechSession, type Recognition } from "./speech-session";
+
 type SpeechWindow = Window & {
   SpeechRecognition?: new () => Recognition;
   webkitSpeechRecognition?: new () => Recognition;
@@ -72,23 +57,21 @@ export function SpeechInput({
   );
   const [listening, setListening] = useState(false),
     [error, setError] = useState("");
-  const recognition = useRef<Recognition | null>(null),
-    timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  function clear() {
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = null;
-  }
+  const session = useRef<ReturnType<typeof createSpeechSession> | null>(null);
+  const change = useRef(onChange);
+  useEffect(() => {
+    change.current = onChange;
+  }, [onChange]);
   const abort = useCallback(() => {
-    clear();
-    const active = recognition.current;
-    recognition.current = null;
-    if (active) {
-      active.onresult = null;
-      active.onerror = null;
-      active.onend = null;
-      active.abort();
-    }
+    session.current?.abort();
+    session.current = null;
   }, []);
+  useEffect(() => {
+    if (disabled) {
+      session.current?.stop();
+      abort();
+    }
+  }, [disabled, abort]);
   useFocusEffect(
     useCallback(
       () => () => {
@@ -128,69 +111,50 @@ export function SpeechInput({
     if (!Constructor) return;
     abort();
     if ("speechSynthesis" in window) window.speechSynthesis.cancel();
-    const active = new Constructor();
-    recognition.current = active;
-    const prefix = value.trim();
-    active.lang = "vi-VN";
-    active.continuous = false;
-    active.interimResults = true;
-    active.maxAlternatives = 1;
-    active.onresult = (event) => {
-      const text = Array.from(event.results)
-        .map((result) => result[0].transcript)
-        .join(" ");
-      onChange([prefix, text].filter(Boolean).join(" ").slice(0, 500));
-    };
-    active.onerror = (event) => {
-      const errors: Record<string, string> = {
-        "not-allowed":
-          "Chưa được phép dùng micro. Hãy cấp quyền micro cho trang trong cài đặt trình duyệt, hoặc dùng micro của bàn phím.",
-        "service-not-allowed":
-          "Trình duyệt chưa cho phép nhận giọng nói. Bạn có thể dùng micro của bàn phím.",
-        "audio-capture":
-          "Không tìm thấy micro. Kiểm tra thiết bị hoặc nhập bằng bàn phím.",
-        "no-speech": "Chưa nghe rõ. Bấm Nói và thử lại ở nơi yên tĩnh.",
-        network:
-          "Không kết nối được dịch vụ nhận giọng nói. Kiểm tra mạng hoặc nhập bằng bàn phím.",
-        "language-not-supported":
-          "Trình duyệt chưa hỗ trợ giọng nói tiếng Việt. Hãy dùng micro của bàn phím.",
-      };
-      if (event.error !== "aborted")
-        setError(
-          errors[event.error] ||
-            "Chưa nhận được giọng nói. Bạn có thể thử lại hoặc gõ nội dung.",
-        );
-      clear();
-      setListening(false);
-    };
-    active.onend = () => {
-      clear();
-      recognition.current = null;
-      setListening(false);
-    };
-    try {
-      active.start();
-      setListening(true);
-      timer.current = setTimeout(() => active.stop(), 25000);
-    } catch {
-      abort();
-      setListening(false);
-      setError(
-        "Không mở được micro. Hãy thử trình duyệt Safari/Chrome hoặc dùng micro của bàn phím.",
-      );
-    }
+    session.current = createSpeechSession({
+      create: () => new Constructor(),
+      prefix: value,
+      onText: (text) => change.current(text),
+      onListening: setListening,
+      onError: (code) => {
+        const errors: Record<string, string> = {
+          "not-allowed":
+            "Chưa được phép dùng micro. Hãy cấp quyền micro cho trang hoặc dùng micro của bàn phím.",
+          "service-not-allowed":
+            "Trình duyệt chưa cho phép nhận giọng nói. Bạn có thể dùng micro của bàn phím.",
+          "audio-capture":
+            "Không tìm thấy micro. Kiểm tra thiết bị hoặc nhập bằng bàn phím.",
+          network:
+            "Không kết nối được dịch vụ giọng nói. Lời nói đã nhận vẫn được giữ lại; kiểm tra mạng rồi bấm Nói tiếp.",
+          "language-not-supported":
+            "Trình duyệt chưa hỗ trợ tiếng Việt. Hãy dùng micro của bàn phím.",
+          "restart-unavailable":
+            "Trình duyệt đã ngắt hoặc chưa nghe thấy tiếng nói sau nhiều lần nối lại. Nội dung đã nhận vẫn còn. Bấm Nói để tiếp tục.",
+          "text-limit":
+            "Đã đủ 500 ký tự cho một lượt. Hãy kiểm tra các khoản trước khi nói thêm.",
+        };
+        if (code !== "aborted")
+          setError(
+            errors[code] ||
+              "Không mở lại được micro. Nội dung đã nhận vẫn còn; bấm Nói để tiếp tục hoặc dùng micro bàn phím.",
+          );
+      },
+    });
+    session.current.start();
   }
+
   return (
     <View style={{ gap: 12 }}>
       <Text style={st.tiny}>
-        Chỉ bật micro khi bạn bấm Nói. Trình duyệt có thể gửi âm thanh đến dịch
-        vụ nhận giọng nói của họ. Nếp Nhà không lưu bản ghi âm.
+        Bấm Nói để bắt đầu, bấm Dừng khi nói xong (tối đa 500 ký tự/lượt). Micro
+        dừng khi rời trang. Trình duyệt có thể gửi âm thanh đến dịch vụ nhận
+        giọng nói của họ. Nếp Nhà không lưu bản ghi âm.
       </Text>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={listening ? "Dừng nghe" : "Nói tiếng Việt"}
         disabled={!supported || disabled}
-        onPress={() => (listening ? recognition.current?.stop() : start())}
+        onPress={() => (listening ? session.current?.stop() : start())}
         style={[
           st.row,
           {

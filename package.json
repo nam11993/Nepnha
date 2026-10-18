@@ -44,7 +44,7 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "lint": "expo lint",
-    "test": "node --experimental-strip-types --test tests/domain.test.ts tests/assistant.test.ts tests/ai-api.test.ts tests/ai-quota.test.mjs tests/cloud.test.mjs",
+    "test": "node --experimental-strip-types --test tests/domain.test.ts tests/assistant.test.ts tests/ai-api.test.ts tests/ai-quota.test.mjs tests/cloud.test.mjs tests/speech.test.ts",
     "build": "expo export --platform web"
   },
   "private": true
