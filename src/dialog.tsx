@@ -26,7 +26,7 @@ export function Dialog({
       <SafeAreaView
         style={{
           flex: 1,
-          backgroundColor: "rgba(12,35,30,0.45)",
+          backgroundColor: "rgba(25,43,63,0.35)",
           padding: 18,
           justifyContent: "center",
           alignItems: "center",
@@ -38,7 +38,7 @@ export function Dialog({
             width: "100%",
             maxWidth: 420,
             maxHeight: "92%",
-            borderRadius: 24,
+            borderRadius: 27,
             backgroundColor: colors.white,
           }}
         >

@@ -9,21 +9,21 @@ import { colors } from "./theme";
 import { CalendarPicker } from "./calendar";
 export { colors } from "./theme";
 export const palette = [
-  "#257968",
-  "#E79B48",
-  "#567EA1",
-  "#B7778B",
-  "#8A9960",
-  "#9D78B8",
-  "#58A6A0",
-  "#B5A26C",
-  "#738898",
-  "#BF765C",
+  "#7463DF",
+  "#F29A7F",
+  "#61C9B2",
+  "#EDCB6F",
+  "#77A8DF",
+  "#B79BE8",
+  "#7DCA91",
+  "#EA98B2",
+  "#67BCCB",
+  "#BEAA78",
 ];
 export const st = StyleSheet.create({
   page: { flex: 1, backgroundColor: colors.bg },
   content: {
-    padding: 16,
+    padding: 19,
     paddingBottom: 100,
     gap: 18,
     width: "100%",
@@ -31,7 +31,7 @@ export const st = StyleSheet.create({
     alignSelf: "center",
   },
   title: {
-    fontSize: 25,
+    fontSize: 27,
     fontWeight: "700",
     color: colors.ink,
     letterSpacing: -0.8,
@@ -39,8 +39,8 @@ export const st = StyleSheet.create({
   subtitle: { fontSize: 14, color: colors.muted, lineHeight: 21 },
   card: {
     backgroundColor: colors.white,
-    borderRadius: 18,
-    padding: 17,
+    borderRadius: 23,
+    padding: 18,
     gap: 14,
   },
   row: {
@@ -55,7 +55,7 @@ export const st = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: colors.line,
-    borderRadius: 14,
+    borderRadius: 16,
     padding: 14,
     fontSize: 16,
     color: colors.ink,
@@ -65,14 +65,14 @@ export const st = StyleSheet.create({
   chip: {
     paddingHorizontal: 14,
     paddingVertical: 11,
-    borderRadius: 20,
-    backgroundColor: "#EBEEF1",
+    borderRadius: 14,
+    backgroundColor: colors.chip,
   },
-  activeChip: { backgroundColor: colors.green },
+  activeChip: { backgroundColor: colors.mint },
   chipText: { fontSize: 13, color: colors.ink },
   button: {
     backgroundColor: colors.green,
-    borderRadius: 15,
+    borderRadius: 16,
     padding: 16,
     alignItems: "center",
     minHeight: 50,
@@ -90,6 +90,7 @@ export function Page({
   addAction = false,
   scrollRef,
   onContentSizeChange,
+  headerAction,
 }: {
   scrollRef?: React.RefObject<ScrollView | null>;
   onContentSizeChange?: () => void;
@@ -97,6 +98,7 @@ export function Page({
   title: string;
   subtitle?: string;
   children: React.ReactNode;
+  headerAction?: React.ReactNode;
 }) {
   const { household, error, reload } = useLedger();
   return (
@@ -117,21 +119,23 @@ export function Page({
             <Text style={st.title}>{title}</Text>
             {subtitle && <Text style={st.tiny}>{subtitle}</Text>}
           </View>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Cài đặt gia đình"
-            onPress={() => router.push("/settings")}
-            style={{
-              width: 42,
-              height: 42,
-              borderRadius: 21,
-              backgroundColor: colors.mint,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Icon name="users" color={colors.green} size={21} />
-          </Pressable>
+          {headerAction ?? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Cài đặt gia đình"
+              onPress={() => router.push("/settings")}
+              style={{
+                width: 42,
+                height: 42,
+                borderRadius: 21,
+                backgroundColor: colors.lavender,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Icon name="users" color={colors.violet} size={21} />
+            </Pressable>
+          )}
         </View>
         {!!error && (
           <Pressable accessibilityRole="button" onPress={() => void reload()}>
@@ -152,10 +156,10 @@ export function Page({
             width: 52,
             height: 52,
             borderRadius: 18,
-            backgroundColor: "#239C79",
+            backgroundColor: colors.green,
             alignItems: "center",
             justifyContent: "center",
-            boxShadow: "0px 5px 18px #21866533",
+            boxShadow: "0px 5px 18px #09826724",
           }}
         >
           <Icon name="plus" color="white" size={27} />
@@ -171,10 +175,12 @@ export function Button({
   title,
   onPress,
   disabled = false,
+  tone = "green",
 }: {
   title: string;
   onPress: () => void;
   disabled?: boolean;
+  tone?: "green" | "violet";
 }) {
   return (
     <Pressable
@@ -182,7 +188,11 @@ export function Button({
       accessibilityLabel={title}
       onPress={onPress}
       disabled={disabled}
-      style={[st.button, disabled && { opacity: 0.45 }]}
+      style={[
+        st.button,
+        tone === "violet" && { backgroundColor: colors.violet },
+        disabled && { opacity: 0.45 },
+      ]}
     >
       <Text style={st.buttonText}>{title}</Text>
     </Pressable>
@@ -207,7 +217,12 @@ export function Chips<T extends string>({
           onPress={() => onChange(item)}
           style={[st.chip, value === item && st.activeChip]}
         >
-          <Text style={[st.chipText, value === item && { color: "white" }]}>
+          <Text
+            style={[
+              st.chipText,
+              value === item && { color: colors.green, fontWeight: "600" },
+            ]}
+          >
             {item}
           </Text>
         </Pressable>
@@ -224,8 +239,8 @@ export function MonthPicker() {
         style={[
           st.row,
           {
-            backgroundColor: "#F0F3F5",
-            borderRadius: 22,
+            backgroundColor: colors.white,
+            borderRadius: 16,
             padding: 0,
             alignSelf: "center",
             width: "100%",

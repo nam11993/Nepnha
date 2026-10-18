@@ -81,7 +81,7 @@ function BudgetForm() {
                 <View
                   style={{
                     height: 6,
-                    backgroundColor: colors.line,
+                    backgroundColor: colors.lavender,
                     borderRadius: 3,
                   }}
                 >
@@ -90,7 +90,7 @@ function BudgetForm() {
                       height: 6,
                       width: `${Math.min(100, limit === 0 ? (amount > 0 ? 100 : 0) : (amount / limit) * 100)}%`,
                       backgroundColor:
-                        amount > limit ? colors.orange : colors.green,
+                        amount > limit ? colors.orange : colors.violet,
                       borderRadius: 3,
                     }}
                   />

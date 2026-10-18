@@ -9,7 +9,7 @@ export default function HTML({ children }: PropsWithChildren) {
           name="viewport"
           content="width=device-width, initial-scale=1, viewport-fit=cover"
         />
-        <meta name="theme-color" content="#F5F6FA" />
+        <meta name="theme-color" content="#F5F7FC" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-title" content="Nếp Nhà" />
         <meta

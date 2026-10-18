@@ -11,9 +11,9 @@ export function categoryStyle(
   if (kind === "income") {
     const incomeColors = [
       [colors.green, colors.mint],
-      ["#568FA9", "#EAF5FA"],
-      ["#B58931", "#FFF4DC"],
-      ["#927ABF", "#F0EBFA"],
+      ["#689CD1", "#EAF4FF"],
+      ["#B28A2C", "#FFF6DC"],
+      ["#8A72CF", "#F0ECFE"],
     ];
     const index =
       name === "Lương"
@@ -24,19 +24,19 @@ export function categoryStyle(
     return { color, tint, icon: "cash" };
   }
   const presets: [RegExp, string, string, IconName][] = [
-    [/Ăn uống/, "#B58931", "#FFF4DC", "food"],
-    [/Nhà ở|Điện nước/, "#927ABF", "#F0EBFA", "home"],
-    [/Mua sắm/, "#C87984", "#FDEEF0", "bag"],
-    [/Đi lại/, "#568FA9", "#EAF5FA", "car"],
-    [/Hiếu hỉ/, "#B58931", "#FFF4DC", "gift"],
+    [/Ăn uống/, "#7463DF", "#F0ECFE", "food"],
+    [/Nhà ở|Điện nước/, "#73B9A4", "#E6F8EE", "home"],
+    [/Mua sắm/, "#E48E77", "#FFF0E9", "bag"],
+    [/Đi lại/, "#689CD1", "#EAF4FF", "car"],
+    [/Hiếu hỉ/, "#B89A45", "#FFF6DC", "gift"],
   ];
   const preset = presets.find(([pattern]) => pattern.test(name));
   if (preset) return { color: preset[1], tint: preset[2], icon: preset[3] };
   const variants = [
-    ["#759957", "#EFF6E7"],
-    ["#927ABF", "#F0EBFA"],
-    ["#568FA9", "#EAF5FA"],
-    ["#C87984", "#FDEEF0"],
+    ["#72BA8F", "#EAF8EE"],
+    ["#A288DB", "#F0ECFE"],
+    ["#689CD1", "#EAF4FF"],
+    ["#DC91AB", "#FFF0F5"],
   ];
   const hash = Array.from(name).reduce(
     (a, c) => (a * 31 + c.charCodeAt(0)) >>> 0,
@@ -48,7 +48,7 @@ export function categoryStyle(
 export function CategoryIcon({
   name,
   kind = "expense",
-  size = 38,
+  size = 43,
 }: {
   name: string;
   kind?: Kind;
@@ -60,7 +60,7 @@ export function CategoryIcon({
       style={{
         width: size,
         height: size,
-        borderRadius: 13,
+        borderRadius: 15,
         backgroundColor: appearance.tint,
         alignItems: "center",
         justifyContent: "center",

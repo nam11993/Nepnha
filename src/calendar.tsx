@@ -98,7 +98,7 @@ export function CalendarPicker({
                     justifyContent: "center",
                     alignItems: "center",
                     borderRadius: 12,
-                    backgroundColor: selected ? colors.ink : "#EDF2EC",
+                    backgroundColor: selected ? colors.violet : colors.lavender,
                   }}
                 >
                   <Text
@@ -143,9 +143,9 @@ export function CalendarPicker({
                     borderRadius: 10,
                     backgroundColor:
                       day === value
-                        ? colors.ink
+                        ? colors.violet
                         : day === localDate()
-                          ? "#E8F2EB"
+                          ? colors.mint
                           : "transparent",
                   }}
                 >
@@ -172,7 +172,7 @@ export function CalendarPicker({
           padding: 12,
           alignItems: "center",
           borderRadius: 12,
-          backgroundColor: "#E8F2EB",
+          backgroundColor: colors.mint,
         }}
       >
         <Text style={{ fontWeight: "600", color: colors.green }}>

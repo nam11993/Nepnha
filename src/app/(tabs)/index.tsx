@@ -27,85 +27,78 @@ export default function Home() {
       subtitle="Gọn thu chi, nhẹ chuyện tiền nhà."
       addAction
     >
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Ghi thu chi bằng giọng nói"
-        onPress={() => router.push("/entry?voice=1")}
+      <MonthPicker />
+      <View
         style={{
-          backgroundColor: colors.green,
-          borderRadius: 22,
-          padding: 20,
-          gap: 12,
+          backgroundColor: colors.hero,
+          borderRadius: 26,
+          padding: 21,
+          gap: 13,
+          overflow: "hidden",
         }}
       >
-        <View style={{ flexDirection: "row", gap: 13, alignItems: "center" }}>
-          <View
-            style={{
-              backgroundColor: "#FFFFFF24",
-              padding: 14,
-              borderRadius: 20,
-            }}
-          >
-            <Icon name="mic" size={28} color="#FFFFFF" />
-          </View>
-          <View style={{ flex: 1, gap: 5 }}>
-            <Text
-              style={{
-                color: "#FFFFFF",
-                fontWeight: "700",
-                fontSize: 18,
-                lineHeight: 25,
-              }}
-            >
-              Ghi thu chi bằng giọng nói
-            </Text>
-            <Text style={{ color: "#E6F2EB", fontSize: 12, lineHeight: 19 }}>
-              Nói một câu · kiểm tra · bấm Lưu
-            </Text>
-          </View>
-        </View>
-        <Text style={{ color: "#E6F2EB", fontSize: 13, lineHeight: 21 }}>
-          “Hôm nay đi chợ 250 nghìn, chuyển khoản, mẹ chi”
-        </Text>
-      </Pressable>
-      <Card>
-        <MonthPicker />
-        <View style={{ alignItems: "center", gap: 10, paddingVertical: 12 }}>
-          <Text
-            style={{ fontSize: 11, letterSpacing: 1.4, color: colors.muted }}
-          >
+        <View style={st.row}>
+          <Text style={{ fontSize: 11, letterSpacing: 0.7, color: "#35725F" }}>
             CÒN LẠI TRONG THÁNG
           </Text>
-          <Text
-            numberOfLines={1}
-            adjustsFontSizeToFit
+          <View
             style={{
-              fontSize: 35,
-              fontWeight: "700",
-              letterSpacing: -1,
-              color: colors.ink,
+              backgroundColor: "#FFFFFFA8",
+              borderRadius: 15,
+              paddingHorizontal: 10,
+              paddingVertical: 6,
             }}
           >
-            {money(summary.balance)}
-          </Text>
-          <Text style={[st.tiny, { textAlign: "center" }]}>
-            Thu nhập trừ chi tiêu · chưa gồm số dư đầu kỳ
-          </Text>
+            <Text
+              style={{ fontSize: 10, color: colors.heroInk, fontWeight: "600" }}
+            >
+              Tháng {Number(month.slice(5))}
+            </Text>
+          </View>
         </View>
-        <View style={{ flexDirection: "row", gap: 10 }}>
-          {(["income", "expense"] as const).map((kind) => (
+        <Text
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          style={{
+            fontSize: 35,
+            fontWeight: "700",
+            letterSpacing: -1.3,
+            color: colors.heroInk,
+            lineHeight: 46,
+          }}
+        >
+          {money(summary.balance)}
+        </Text>
+        <Text style={{ fontSize: 11, lineHeight: 18, color: "#35725F" }}>
+          Thu nhập − chi tiêu · chưa gồm số dư đầu kỳ
+        </Text>
+      </View>
+      <View style={{ flexDirection: "row", gap: 12 }}>
+        {(["income", "expense"] as const).map((kind) => (
+          <View
+            key={kind}
+            style={{
+              flex: 1,
+              minWidth: 0,
+              backgroundColor: colors.white,
+              borderRadius: 20,
+              padding: 15,
+              gap: 11,
+            }}
+          >
             <View
-              key={kind}
-              style={{
-                flex: 1,
-                padding: 14,
-                gap: 8,
-                borderRadius: 15,
-                backgroundColor: kind === "income" ? colors.mint : colors.rose,
-              }}
+              style={{ flexDirection: "row", alignItems: "center", gap: 7 }}
             >
               <View
-                style={{ flexDirection: "row", gap: 6, alignItems: "center" }}
+                style={{
+                  width: 26,
+                  height: 26,
+                  borderRadius: 9,
+                  backgroundColor:
+                    kind === "income" ? colors.mint : colors.rose,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
               >
                 <Icon
                   name={
@@ -113,56 +106,84 @@ export default function Home() {
                       ? "arrow-down-outline"
                       : "arrow-up-outline"
                   }
-                  size={15}
+                  size={14}
                   color={kind === "income" ? colors.green : colors.orange}
                 />
-                <Text style={st.tiny}>
-                  {kind === "income" ? "Thu nhập" : "Chi tiêu"}
-                </Text>
               </View>
-              <Text
-                numberOfLines={1}
-                adjustsFontSizeToFit
-                style={{
-                  fontSize: 17,
-                  fontWeight: "700",
-                  color: kind === "income" ? colors.green : colors.orange,
-                }}
-              >
-                {money(summary[kind])}
+              <Text style={st.tiny}>
+                {kind === "income" ? "Thu nhập" : "Chi tiêu"}
               </Text>
             </View>
-          ))}
-        </View>
-      </Card>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Mở trợ lý thu chi"
-        onPress={() => router.push("/assistant")}
-      >
-        <Card>
-          <View style={st.row}>
-            <View
+            <Text
+              numberOfLines={1}
+              adjustsFontSizeToFit
               style={{
-                width: 42,
-                height: 42,
-                borderRadius: 14,
-                backgroundColor: colors.mint,
-                alignItems: "center",
-                justifyContent: "center",
+                fontSize: 18,
+                fontWeight: "700",
+                letterSpacing: -0.5,
+                color: kind === "income" ? colors.green : colors.orange,
               }}
             >
-              <Icon name="mic" color={colors.green} size={23} />
-            </View>
-            <View style={{ flex: 1, gap: 4 }}>
-              <Text style={st.heading}>Trợ lý thu chi</Text>
-              <Text style={st.tiny}>
-                Nói để hỏi về chi tiêu, thu nhập và ngân sách.
-              </Text>
-            </View>
-            <Icon name="chevron-forward" color={colors.green} size={19} />
+              {money(summary[kind])}
+            </Text>
           </View>
-        </Card>
+        ))}
+      </View>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Ghi thu chi bằng giọng nói"
+        onPress={() => router.push("/entry?voice=1")}
+        style={{
+          backgroundColor: colors.violet,
+          borderRadius: 22,
+          padding: 17,
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 13,
+          overflow: "hidden",
+        }}
+      >
+        <View
+          pointerEvents="none"
+          style={{
+            position: "absolute",
+            width: 100,
+            height: 100,
+            borderRadius: 50,
+            right: -30,
+            top: -25,
+            borderWidth: 17,
+            borderColor: "#FFFFFF0A",
+          }}
+        />
+        <View
+          style={{
+            width: 45,
+            height: 45,
+            borderRadius: 16,
+            backgroundColor: "#FFFFFF24",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Icon name="mic" color="white" size={24} />
+        </View>
+        <View style={{ flex: 1, gap: 5 }}>
+          <Text
+            style={{
+              fontSize: 15,
+              lineHeight: 22,
+              fontWeight: "700",
+              color: "white",
+            }}
+          >
+            Nói một câu, ghi thu chi
+          </Text>
+          <Text style={{ fontSize: 11, lineHeight: 18, color: "#E2DEFF" }}>
+            AI điền sẵn · bạn kiểm tra rồi lưu
+          </Text>
+        </View>
+        <Icon name="chevron-forward" color="white" size={17} />
       </Pressable>
       <Card>
         <View style={st.row}>
@@ -182,6 +203,35 @@ export default function Home() {
           </Text>
         )}
       </Card>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Mở trợ lý thu chi"
+        onPress={() => router.push("/assistant")}
+      >
+        <Card>
+          <View style={st.row}>
+            <View
+              style={{
+                width: 42,
+                height: 42,
+                borderRadius: 14,
+                backgroundColor: colors.lavender,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Icon name="mic" color={colors.violet} size={23} />
+            </View>
+            <View style={{ flex: 1, gap: 4 }}>
+              <Text style={st.heading}>Trợ lý thu chi</Text>
+              <Text style={st.tiny}>
+                Nói để hỏi về chi tiêu, thu nhập và ngân sách.
+              </Text>
+            </View>
+            <Icon name="chevron-forward" color={colors.green} size={19} />
+          </View>
+        </Card>
+      </Pressable>
       <Card>
         <View style={st.row}>
           <Text style={st.heading}>Ngân sách của nhà</Text>

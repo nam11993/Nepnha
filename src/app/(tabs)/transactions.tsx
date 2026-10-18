@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Text, TextInput, View } from "react-native";
+import { Pressable, Text, TextInput, View } from "react-native";
+import { router } from "expo-router";
 import { useLedger } from "../../store";
 import { displayDate, money, monthEntries, totals } from "../../domain";
 import { Card, Chips, colors, Empty, MonthPicker, Page, st } from "../../ui";
@@ -22,7 +23,27 @@ export default function Transactions() {
     <Page
       title="Giao dịch"
       subtitle="Mỗi khoản tiền đều có một câu chuyện."
-      addAction
+      headerAction={
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Thêm giao dịch"
+          onPress={() => router.push("/entry")}
+          style={{
+            backgroundColor: colors.green,
+            borderRadius: 13,
+            paddingHorizontal: 12,
+            paddingVertical: 11,
+            flexDirection: "row",
+            gap: 6,
+            alignItems: "center",
+          }}
+        >
+          <Icon name="plus" size={16} color="white" />
+          <Text style={{ fontSize: 12, fontWeight: "600", color: "white" }}>
+            Ghi mới
+          </Text>
+        </Pressable>
+      }
     >
       <MonthPicker />
       <Chips

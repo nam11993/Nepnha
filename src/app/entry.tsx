@@ -154,7 +154,7 @@ export default function Editor() {
               borderWidth: 1.5,
               borderColor: amountFocused ? colors.green : colors.line,
               borderRadius: 14,
-              backgroundColor: amountFocused ? "#FFFFFF" : "#F7F9F6",
+              backgroundColor: amountFocused ? colors.white : colors.bg,
             }}
           >
             <TextInput

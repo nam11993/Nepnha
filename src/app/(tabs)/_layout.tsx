@@ -1,5 +1,5 @@
 import React from "react";
-import { Text } from "react-native";
+import { Text, View } from "react-native";
 import { Tabs } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Icon } from "../../icon";
@@ -64,8 +64,19 @@ export default function Layout() {
                 {title}
               </Text>
             ),
-            tabBarIcon: ({ color, size }) => (
-              <Icon name={icon} color={color} size={Math.min(size, 24)} />
+            tabBarIcon: ({ color, size, focused }) => (
+              <View
+                style={{
+                  width: 44,
+                  height: 31,
+                  borderRadius: 12,
+                  backgroundColor: focused ? colors.mint : "transparent",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Icon name={icon} color={color} size={Math.min(size, 23)} />
+              </View>
             ),
           }}
         />

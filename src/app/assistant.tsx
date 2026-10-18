@@ -140,6 +140,7 @@ export default function Assistant() {
           onChange={setQuestion}
         />
         <Button
+          tone="violet"
           title={
             working
               ? "AI đang đọc câu hỏi…"

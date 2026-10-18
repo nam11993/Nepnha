@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { Text, View } from "react-native";
-import { annual, breakdown, money, monthEntries } from "../../domain";
+import { Pressable, Text, View } from "react-native";
+import { annual, breakdown, money, monthEntries, totals } from "../../domain";
 import { useLedger } from "../../store";
-import { Button, Card, Chips, colors, MonthPicker, Page, st } from "../../ui";
+import { Card, Chips, colors, MonthPicker, Page, st, Metric } from "../../ui";
+import { Icon } from "../../icon";
 import { router } from "expo-router";
 import { Donut, YearChart } from "../../charts";
 import { ReportYearPicker } from "../../report-year-picker";
@@ -17,10 +18,61 @@ export default function Reports() {
   return (
     <Page title="Báo cáo" subtitle="Nhìn rõ tiền đến từ đâu và đi về đâu.">
       <MonthPicker />
-      <Button
-        title="Hỏi trợ lý bằng giọng nói"
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Hỏi trợ lý bằng giọng nói"
         onPress={() => router.push("/assistant")}
-      />
+        style={{
+          padding: 14,
+          borderRadius: 16,
+          backgroundColor: colors.lavender,
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 10,
+        }}
+      >
+        <Icon name="mic" color={colors.violet} size={20} />
+        <Text style={{ color: colors.violet, fontSize: 13, fontWeight: "600" }}>
+          Hỏi trợ lý bằng giọng nói
+        </Text>
+      </Pressable>
+      <Card>
+        <Text style={st.heading}>
+          Bức tranh tháng {Number(month.slice(5))} / {month.slice(0, 4)}
+        </Text>
+        <View style={{ flexDirection: "row", gap: 12 }}>
+          <View
+            style={{
+              flex: 1,
+              minWidth: 0,
+              padding: 13,
+              backgroundColor: colors.mint,
+              borderRadius: 16,
+            }}
+          >
+            <Metric
+              label="Thu nhập"
+              value={totals(entries).income}
+              color={colors.green}
+            />
+          </View>
+          <View
+            style={{
+              flex: 1,
+              minWidth: 0,
+              padding: 13,
+              backgroundColor: colors.rose,
+              borderRadius: 16,
+            }}
+          >
+            <Metric
+              label="Chi tiêu"
+              value={totals(entries).expense}
+              color={colors.orange}
+            />
+          </View>
+        </View>
+      </Card>
       <Card>
         <Text style={st.heading}>Cơ cấu trong tháng</Text>
         <Chips

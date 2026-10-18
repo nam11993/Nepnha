@@ -115,12 +115,12 @@ export function VoiceEntry({
           alignItems: "center",
           padding: 14,
           borderRadius: 15,
-          backgroundColor: colors.mint,
+          backgroundColor: colors.lavender,
         }}
       >
-        <Icon name="mic" color={colors.green} size={21} />
+        <Icon name="mic" color={colors.violet} size={21} />
         <View style={{ flex: 1, gap: 3 }}>
-          <Text style={{ fontWeight: "600", color: colors.green }}>
+          <Text style={{ fontWeight: "600", color: colors.violet }}>
             Ghi thu chi bằng giọng nói
           </Text>
           <Text style={st.tiny}>AI điền sẵn, bạn kiểm tra rồi bấm Lưu.</Text>
@@ -178,6 +178,7 @@ export function VoiceEntry({
                 Lưu giao dịch.
               </Text>
               <Button
+                tone="violet"
                 title={working ? "AI đang điền giao dịch…" : "Điền giao dịch"}
                 disabled={!session || !text.trim() || working || status.loading}
                 onPress={() => void extract()}

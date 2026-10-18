@@ -33,7 +33,7 @@ export function Donut({
             cx={100}
             cy={100}
             r={72}
-            stroke="#EDF0E9"
+            stroke={colors.line}
             strokeWidth={27}
             fill="none"
           />
@@ -232,7 +232,7 @@ export function YearChart({
                   width={15}
                   height={(r.income / maximum) * 160}
                   rx={3}
-                  fill={colors.green}
+                  fill={colors.chartGreen}
                 />
                 <Rect
                   x={27 + i * 49}
@@ -240,7 +240,7 @@ export function YearChart({
                   width={15}
                   height={(r.expense / maximum) * 160}
                   rx={3}
-                  fill={colors.orange}
+                  fill={colors.coral}
                 />
                 <SVGText
                   fontFamily="Arial, sans-serif"
@@ -258,8 +258,28 @@ export function YearChart({
         </ScrollView>
       </View>
       <View style={{ flexDirection: "row", gap: 20 }}>
-        <Text style={{ color: colors.green }}>● Thu nhập</Text>
-        <Text style={{ color: colors.orange }}>● Chi tiêu</Text>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+          <View
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: 4,
+              backgroundColor: colors.chartGreen,
+            }}
+          />
+          <Text style={st.tiny}>Thu nhập</Text>
+        </View>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+          <View
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: 4,
+              backgroundColor: colors.coral,
+            }}
+          />
+          <Text style={st.tiny}>Chi tiêu</Text>
+        </View>
       </View>
     </View>
   );
