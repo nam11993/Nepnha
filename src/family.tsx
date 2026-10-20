@@ -5,6 +5,7 @@ import { cloudConfig } from "./cloud-config";
 import { useLedger } from "./store";
 import { Card, colors, st } from "./ui";
 import { SettingAction, SettingGroup, SettingRow } from "./settings-controls";
+import { AppleSignInButton, signInWithApple } from "./apple-sign-in";
 type Member = { user_id: string; display_name: string; is_owner: boolean };
 export type AccountSection = "account" | "family" | "ai";
 export function Family({
@@ -19,6 +20,23 @@ export function Family({
   const { session, profile, household, reload, isOwner } = useLedger();
   const [displayName, setDisplayName] = useState(profile?.display_name ?? "");
   const [editingName, setEditingName] = useState(false);
+  const [appleEnabled, setAppleEnabled] = useState(false);
+  useEffect(() => {
+    const controller = new AbortController();
+    void fetch(cloudConfig.url + "/auth/v1/settings", {
+      headers: { apikey: cloudConfig.publishableKey },
+      cache: "no-store",
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        if (!response.ok) return;
+        const settings = await response.json();
+        if (!controller.signal.aborted)
+          setAppleEnabled(settings.external?.apple === true);
+      })
+      .catch(() => {});
+    return () => controller.abort();
+  }, []);
   const [familyName, setFamilyName] = useState("Gia đình mình"),
     [invite, setInvite] = useState("");
   const [mode, setMode] = useState<"home" | "create" | "join">("home");
@@ -101,6 +119,9 @@ export function Family({
   const linked = session?.user.identities?.some(
     (identity) => identity.provider === "google",
   );
+  const appleLinked = session?.user.identities?.some(
+    (identity) => identity.provider === "apple",
+  );
   const feedback = (
     <>
       {!!message && (
@@ -151,6 +172,12 @@ export function Family({
           disabled={working}
           onPress={() => void run(() => google())}
         />
+        {appleEnabled && (
+          <AppleSignInButton
+            disabled={working}
+            onPress={() => void run(() => signInWithApple())}
+          />
+        )}
         {feedback}
       </View>
     );
@@ -533,7 +560,12 @@ export function Family({
           <>
             <Text style={st.heading}>Phương thức đăng nhập</Text>
             <Text style={st.subtitle}>
-              {linked ? "Google · Đã liên kết" : "Email · Chưa liên kết Google"}
+              {[
+                linked && "Google · Đã liên kết",
+                appleLinked && "Apple · Đã liên kết",
+              ]
+                .filter(Boolean)
+                .join("\n") || "Email · Chưa liên kết Google"}
             </Text>
             {!linked && (
               <SettingAction
@@ -542,6 +574,22 @@ export function Family({
                 disabled={working}
                 onPress={() => void run(() => google(true))}
               />
+            )}
+            {appleEnabled && !appleLinked && (
+              <View style={{ gap: 10 }}>
+                <Text style={st.tiny}>
+                  Liên kết Apple vào tài khoản này để tiếp tục dùng cùng sổ và
+                  gia đình, kể cả khi bạn ẩn email.
+                </Text>
+                <AppleSignInButton
+                  disabled={working}
+                  onPress={() =>
+                    void run(async () => {
+                      await signInWithApple(true);
+                    })
+                  }
+                />
+              </View>
             )}
           </>
         )}

@@ -77,6 +77,7 @@ export function TransactionRow({
   entry: Entry;
   showDate?: boolean;
 }) {
+  const description = entry.note.trim();
   return (
     <Pressable
       accessibilityRole="button"
@@ -91,18 +92,31 @@ export function TransactionRow({
       }}
     >
       <CategoryIcon name={entry.category} kind={entry.kind} />
-      <View style={{ flex: 1, gap: 4 }}>
-        <Text style={{ fontSize: 14, fontWeight: "600", color: colors.ink }}>
-          {entry.category}
-        </Text>
+      <View style={{ flex: 1, minWidth: 0, gap: 4 }}>
         <Text
-          numberOfLines={1}
+          numberOfLines={2}
+          style={{
+            fontSize: 14,
+            lineHeight: 21,
+            fontWeight: "600",
+            color: colors.ink,
+          }}
+        >
+          {description || entry.category}
+        </Text>
+        {!!description && (
+          <Text
+            numberOfLines={2}
+            style={{ fontSize: 12, lineHeight: 18, color: colors.muted }}
+          >
+            {entry.category}
+          </Text>
+        )}
+        <Text
+          numberOfLines={2}
           style={{ fontSize: 12, lineHeight: 18, color: colors.muted }}
         >
-          {[
-            showDate ? displayDate(entry.date) : entry.note || entry.payment,
-            entry.member,
-          ]
+          {[showDate ? displayDate(entry.date) : entry.payment, entry.member]
             .filter(Boolean)
             .join(" · ")}
         </Text>
@@ -111,6 +125,7 @@ export function TransactionRow({
         style={{
           fontSize: 14,
           fontWeight: "600",
+          flexShrink: 0,
           color: entry.kind === "income" ? colors.green : colors.orange,
         }}
       >

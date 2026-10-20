@@ -8,9 +8,11 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": false,
+      "usesAppleSignIn": true,
       "bundleIdentifier": "com.example.nepnha",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "CFBundleAllowMixedLocalizations": true
       }
     },
     "android": {
@@ -29,7 +31,8 @@
     "plugins": [
       "expo-router",
       "expo-sharing",
-      "expo-font"
+      "expo-font",
+      "expo-apple-authentication"
     ],
     "scheme": "nepnha"
   }

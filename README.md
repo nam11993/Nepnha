@@ -43,6 +43,10 @@ Xem [ACCOUNTS.md](ACCOUNTS.md) để thiết lập Google OAuth, liên kết tà
 
 URL quay về sau đăng nhập: `https://nep-nha-thu-chi.lunargem512.chatgpt.site/settings`. Khóa publishable trong `src/cloud-config.ts` là khóa công khai, không phải khóa quản trị. API key OpenAI chỉ lưu trong Supabase Edge Function Secrets.
 
+## Đăng nhập Apple
+
+Đã chuẩn bị code đăng nhập Apple trên web và iOS, cùng liên kết vào tài khoản hiện có. Provider Apple hiện chưa bật; cần tài khoản Apple Developer và hoàn tất cấu hình, thu hồi token khi xóa tài khoản, kiểm thử iPhone trước khi phát hành. Xem [APPLE-LOGIN.md](APPLE-LOGIN.md).
+
 ## Chạy thử
 
 Yêu cầu Node.js 22.13 trở lên. Tại thư mục này:

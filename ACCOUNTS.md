@@ -2,7 +2,9 @@
 
 Web release: Google OAuth, mandatory app display name, server-backed personal books,
 family membership, author-based editing and an immutable server audit trail.
-Apple sign-in/native auth integration and App Store submission remain future work.
+Apple web OAuth and native iOS sign-in/linking are prepared in source. The live
+Apple provider remains disabled until Apple Developer configuration is completed.
+App Store submission and real-device Apple authentication are not yet validated.
 
 ## Database upgrade
 

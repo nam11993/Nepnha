@@ -14,11 +14,11 @@ export default function Privacy() {
       <Card>
         <Text style={st.heading}>Tài khoản và nơi lưu dữ liệu</Text>
         <Text style={st.subtitle}>
-          Google xác thực đăng nhập. Nếp Nhà sử dụng mã tài khoản, email và tên
-          hiển thị; không yêu cầu quyền truy cập Gmail, danh bạ hay tài khoản
-          ngân hàng. Khi chưa đăng nhập, sổ lưu trong trình duyệt/thiết bị. Khi
-          đăng nhập, sổ cá nhân được lưu trên Supabase để đồng bộ; không tự nhập
-          sổ trên thiết bị vào tài khoản.
+          Google hoặc Apple (khi được bật) xác thực đăng nhập. Nếp Nhà sử dụng
+          mã tài khoản, email và tên hiển thị; không yêu cầu quyền truy cập
+          Gmail, danh bạ hay tài khoản ngân hàng. Khi chưa đăng nhập, sổ lưu
+          trong trình duyệt/thiết bị. Khi đăng nhập, sổ cá nhân được lưu trên
+          Supabase để đồng bộ; không tự nhập sổ trên thiết bị vào tài khoản.
         </Text>
       </Card>
       <Card>
